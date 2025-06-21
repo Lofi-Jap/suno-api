@@ -17,14 +17,27 @@ app.get('/suno', (req, res) => {
   // Appel du script Playwright avec le prompt
   exec(`node generate.js "${prompt}"`, (error, stdout, stderr) => {
     if (error) {
-      console.error(`❌ Erreur : ${error.message}`);
+      console.error(`❌ Erreur d'exécution : ${error.message}`);
       return res.status(500).json({ error: 'Erreur de génération' });
     }
 
+    if (stderr) {
+      console.warn(`⚠️ stderr : ${stderr}`);
+    }
+
     try {
+      // Efface le cache du require pour éviter les erreurs de cache sur Render
+      delete require.cache[require.resolve('./output.json')];
       const output = require('./output.json');
+
+      if (!output.audioUrl) {
+        console.error('❌ audioUrl manquant dans output.json');
+        return res.status(500).json({ error: 'audioUrl manquant' });
+      }
+
       res.json({ audio_url: output.audioUrl });
     } catch (err) {
+      console.error('❌ Erreur lecture output.json :', err);
       res.status(500).json({ error: 'Erreur lecture output' });
     }
   });
