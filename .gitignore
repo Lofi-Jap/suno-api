@@ -131,3 +131,7 @@ dist
 
 # Replit debugger
 .breakpoints
+
+suno-cookies.json
+node_modules/
+.replit
